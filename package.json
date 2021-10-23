@@ -1,0 +1,16 @@
+{
+  "name": "blockchain-capstone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "truffle test"
+  },
+  "keywords": [],
+  "author": "Sergey Fayman",
+  "license": "MIT",
+  "devDependencies": {
+    "openzeppelin-solidity": "^2.2.0"
+  },
+  "dependencies": {}
+}
