@@ -1,5 +1,6 @@
 var Verifier = artifacts.require('Verifier');
 const proofJSON = require("../../zokrates/code/square/proof.json");
+
 contract('Verifier', accounts => {
 
     const account_one = accounts[0];
@@ -28,7 +29,6 @@ contract('Verifier', accounts => {
             const actual = await contract.verifyTx(invalidProofJSON.proof, invalidProofJSON.inputs);
             assert.equal(actual, expected, "Invalid proof data");
         });
-
 
     });
   

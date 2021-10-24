@@ -5,6 +5,8 @@ var SolnSquareVeririfer = artifacts.require('SolnSquareVeririfer');
 var Veririfer = artifacts.require('Verifier');
 
 const proofJSON = require("../../zokrates/code/square/proof.json");
+const proofJSON1 = require("../../zokrates/code/square/proof1.json");
+
 
 contract('SolnSquareVeririfer', accounts => {
 
@@ -31,13 +33,45 @@ contract('SolnSquareVeririfer', accounts => {
            assert.equal(eventEmitted, true, 'Solution was not registered'); 
         });
 
-        it('should mint new token', async function () { 
+        it('should not register same solution twice', async function () { 
+            let eventEmitted = false;
+            let errorFound = false;
+            await contract.regeisterSolution(proofJSON.proof.a, proofJSON.proof.b, proofJSON.proof.c, proofJSON.inputs, {from: account_one});
+            try {
             const tx =  await contract.regeisterSolution(proofJSON.proof.a, proofJSON.proof.b, proofJSON.proof.c, proofJSON.inputs, {from: account_one});
+
+         
+            truffleAssert.eventEmitted(tx, 'SolutionRegistered', (eventData) => {
+                eventEmitted = true; 
+                return eventEmitted;
+            });
+        }catch(e){
+            errorFound = true;
+         }
+
+           assert.equal(eventEmitted, false, 'Solution was registered'); 
+           assert.equal(errorFound, true, 'Error was not found'); 
+        });
+
+
+        it('should mint new token', async function () { 
+            await contract.regeisterSolution(proofJSON.proof.a, proofJSON.proof.b, proofJSON.proof.c, proofJSON.inputs, {from: account_one});
             await contract.mint(account_two, proofJSON.inputs, {from:account_one});
             const totalSupply = await contract.totalSupply();
             assert.equal(totalSupply, 1, "Invalid total supply number");
         });
 
+
+        it('should mint new tokens with different solutions succeffully', async function () { 
+            await contract.regeisterSolution(proofJSON.proof.a, proofJSON.proof.b, proofJSON.proof.c, proofJSON.inputs, {from: account_one});
+            await contract.regeisterSolution(proofJSON1.proof.a, proofJSON1.proof.b, proofJSON1.proof.c, proofJSON1.inputs, {from: account_one});
+            
+            await contract.mint(account_two, proofJSON.inputs, {from:account_one});
+            await contract.mint(account_two, proofJSON1.inputs, {from:account_one});
+            
+            const totalSupply = await contract.totalSupply();
+            assert.equal(totalSupply, 2, "Invalid total supply number");
+        });
 
     });
   
