@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "./Verifier.sol";
 import "./ERC721Mintable.sol";
 
-contract SolnSquareVeririfer is ERC721Mintable {
+contract SolnSquareVerifier is ERC721Mintable {
     struct Solution {
         uint256 index;
         address owner;
@@ -21,7 +21,7 @@ contract SolnSquareVeririfer is ERC721Mintable {
         _verifier = Verifier(verifier);
     }
 
-    function regeisterSolution(
+    function registerSolution(
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
@@ -50,7 +50,7 @@ contract SolnSquareVeririfer is ERC721Mintable {
         emit SolutionRegistered(index);
     }
 
-    function mint(address to, uint256[2] memory inputs) external {
+    function mintNewNFT(address to, uint256[2] memory inputs) external {
         bytes32 key = keccak256(abi.encodePacked(inputs[0], inputs[1]));
         require(
             _keyToSolution[key].owner == msg.sender,
