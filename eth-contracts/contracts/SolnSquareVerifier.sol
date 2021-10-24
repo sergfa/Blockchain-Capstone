@@ -1,60 +1,54 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.0;
+pragma solidity ^0.8.0;
 
-// TODO define a contract call to the zokrates generated solidity contract <Verifier> or <renamedVerifier>
+import './Verifier.sol';
+import './ERC721Mintable.sol';
 
+contract SolnSquareVeririfer is ERC721Mintable {
+    struct Solution {
+        uint256 index;
+        address owner;
+        bool used;
+    }
 
+    Verifier private _verifier;
+    Solution [] private _solutions;
+    mapping(bytes32 => Solution) private _keyToSolution;
 
-// TODO define another contract named SolnSquareVerifier that inherits from your ERC721Mintable class
+    event SolutionRegistered(uint index);
 
+    constructor(address verifier) {
+        _verifier = Verifier(verifier);
+    }
 
+    function regeisterSolution(uint256[2] memory a, uint256[2][2] memory b, uint256[2] memory c , uint256[2] memory inputs) public {
+        bytes32 key = keccak256(abi.encodePacked(inputs[0], inputs[1]));
+        require(_keyToSolution[key].owner == address(0), 'Solution already registered');
+        Verifier.Proof memory proof;
+        proof.a.X = a[0];
+        proof.a.Y = a[1];
+        proof.b.X = b[0];
+        proof.b.Y = b[1];
+        proof.c.X = c[0];
+        proof.c.Y = c[1];
+        bool verify = _verifier.verifyTx(proof, inputs);
+        require(verify,'Invalid proof data');
+        uint256 index = _solutions.length;
+        Solution memory sol;
+        sol.index = index;
+        sol.owner = msg.sender;
+        _solutions.push(sol);
+        _keyToSolution[key] = sol;
+        emit SolutionRegistered(index);
+    }
 
-// TODO define a solutions struct that can hold an index & an address
-
-
-// TODO define an array of the above struct
-
-
-// TODO define a mapping to store unique solutions submitted
-
-
-
-// TODO Create an event to emit when a solution is added
-
-
-
-// TODO Create a function to add the solutions to the array and emit the event
-
-
-
-// TODO Create a function to mint new NFT only after the solution has been verified
-//  - make sure the solution is unique (has not been used before)
-//  - make sure you handle metadata as well as tokenSuplly
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    function mint(address to, uint256[2] memory inputs) external {
+         bytes32 key = keccak256(abi.encodePacked(inputs[0], inputs[1]));
+         require(_keyToSolution[key].owner == msg.sender, 'Solution is not registered by caller');
+         require(_keyToSolution[key].used == false, 'Solution already used');
+         Solution memory sol = _keyToSolution[key];
+        _keyToSolution[key].used = true;
+         super.mint(to, sol.index);
+    }
+}
 
